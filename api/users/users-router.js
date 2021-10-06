@@ -41,20 +41,36 @@ router.put('/:id', validateUserId,validateUser,(req, res, next) => {
   .catch(next)
 });
 
-router.delete('/:id', validateUserId,(req, res) => {
-  // RETURN THE FRESHLY DELETED USER OBJECT
-  // this needs a middleware to verify user id
+router.delete('/:id', validateUserId, async (req, res) => {
+  try{
+    await Users.remove(req.params.id)
+    res.json(user)
+  }catch(err){
+    next(err)
+  }
 });
 
-router.get('/:id/posts', validateUserId, (req, res) => {
-  // RETURN THE ARRAY OF USER POSTS
-  // this needs a middleware to verify user id
+router.get('/:id/posts', validateUserId, async(req, res,next) => {
+  try{
+    const result = await Users.getUserPosts(req.params.id)
+    res.json(user)
+   }catch(err){
+     next(err)
+   }
+  
 });
 
-router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+router.post('/:id/posts', validateUserId, validatePost, async(req, res, next) => {
   // RETURN THE NEWLY CREATED USER POST
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
+  try{
+    const result = await Posts.insert({
+      user_id: req.params.id,
+      text: req.text,
+    })
+    res.status(201).json(result)
+  } catch(err){
+    next(err)
+  }
 });
 
 //error handling router
@@ -63,6 +79,6 @@ router.use((err,req,res,next)=>{
     message: err.message
   })
 })
-// do not forget to export the router
 
+// do not forget to export the router
 module.exports = router
